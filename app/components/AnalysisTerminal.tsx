@@ -18,7 +18,6 @@ const AnalysisTerminal = ({
   pulseOnTest, 
   history, 
   currentInput,
-  isProcessing,
   onInputChange,
   onTest,
   testsRemaining = 6

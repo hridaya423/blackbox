@@ -19,9 +19,8 @@ const getDailyEquation = () => {
 const getPuzzleNumber = () => {
   const startDate = new Date('2025-07-20T00:00:00Z');
   const currentDate = new Date();
-  currentDate.setHours(0, 0, 0, 0);
-  startDate.setHours(0, 0, 0, 0);
-  const diffTime = Math.abs(currentDate.getTime() - startDate.getTime());
+  const currentUTC = new Date(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate());
+  const diffTime = Math.abs(currentUTC.getTime() - startDate.getTime());
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return diffDays + 1;
 };
@@ -31,7 +30,7 @@ interface GameProps {
   onPuzzleNumberChange?: (num: number) => void;
 }
 
-const Game = ({ onBackToIntro, onPuzzleNumberChange }: GameProps) => {
+const Game = ({ onPuzzleNumberChange }: GameProps) => {
   const [equation, setEquation] = useState({ a: 0, b: 0 });
   const [inputValue, setInputValue] = useState("");
   const [history, setHistory] = useState<{ input: number; output: number }[]>([]);
@@ -41,7 +40,6 @@ const Game = ({ onBackToIntro, onPuzzleNumberChange }: GameProps) => {
   const [message, setMessage] = useState("");
   const [isSolved, setIsSolved] = useState(false);
   const [puzzleNumber, setPuzzleNumber] = useState(0);
-  const [pulseBox, setPulseBox] = useState(false);
 
   useEffect(() => {
     const { a, b } = getDailyEquation();
@@ -63,8 +61,6 @@ const Game = ({ onBackToIntro, onPuzzleNumberChange }: GameProps) => {
       setHistory([...history, { input: num, output }]);
       setInputValue("");
       setTestsRemaining(testsRemaining - 1);
-      setPulseBox(true);
-      setTimeout(() => setPulseBox(false), 100);
     }
   };
 
@@ -94,14 +90,7 @@ const Game = ({ onBackToIntro, onPuzzleNumberChange }: GameProps) => {
     });
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      if (e.currentTarget.id === 'guess') {
-        handleGuess();
-      }
-    }
-  };
-
+ 
   return (
     <div className="min-h-screen flex flex-col">
 
@@ -112,7 +101,6 @@ const Game = ({ onBackToIntro, onPuzzleNumberChange }: GameProps) => {
           <div className="order-2 lg:order-1">
             <AnalysisTerminal 
               isActive={!isSolved} 
-              pulseOnTest={pulseBox}
               history={history}
               currentInput={inputValue}
               isProcessing={false}
@@ -158,7 +146,12 @@ const Game = ({ onBackToIntro, onPuzzleNumberChange }: GameProps) => {
                       type="text"
                       value={guess}
                       onChange={(e) => setGuess(e.target.value)}
-                      onKeyPress={handleKeyPress}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          e.currentTarget.blur();
+                          handleGuess();
+                        }
+                      }}
                       className="bg-zinc-800 border border-zinc-600 text-zinc-100 rounded-lg px-4 py-3 text-base font-medium w-full min-h-[48px] focus:border-green-500 focus:ring-2 focus:ring-green-500/20 focus:outline-none placeholder-zinc-500"
                       disabled={isSolved || guessMade}
                       placeholder="x * a + b"

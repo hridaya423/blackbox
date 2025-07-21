@@ -20,7 +20,7 @@ const getDailyEquation = () => {
 const getPuzzleNumber = () => {
   const startDate = new Date('2025-07-20T00:00:00Z');
   const currentDate = new Date();
-  const currentUTC = new Date(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate());
+  const currentUTC = new Date(Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate()))
   const diffTime = Math.abs(currentUTC.getTime() - startDate.getTime());
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return diffDays + 1;

@@ -113,8 +113,6 @@ const AnalysisTerminal = ({
                 )}
               </div>
             </div>
-
-            
             
             <div className="flex items-center justify-center mt-6 gap-4">
               <span className={`font-mono text-sm ${isActive ? 'text-green-500' : 'text-zinc-500'}`}>

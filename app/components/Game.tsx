@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import AnalysisTerminal from "./AnalysisTerminal";
+import { validateLinearExpression, getExpressionHint } from "../utils/mathUtils";
 
 const pseudoRandom = (seed: number) => {
   let x = Math.sin(seed) * 10000;
@@ -40,6 +41,7 @@ const Game = ({ onPuzzleNumberChange }: GameProps) => {
   const [message, setMessage] = useState("");
   const [isSolved, setIsSolved] = useState(false);
   const [puzzleNumber, setPuzzleNumber] = useState(0);
+  const [expressionHint, setExpressionHint] = useState("");
 
   useEffect(() => {
     const { a, b } = getDailyEquation();
@@ -65,13 +67,12 @@ const Game = ({ onPuzzleNumberChange }: GameProps) => {
   };
 
   const handleGuess = () => {
-    if (isSolved || guessMade) return;
+    if (isSolved || guessMade || history.length === 0) return;
 
     setGuessMade(true);
     const { a, b } = equation;
-    const correctEquation = `x * ${a} + ${b}`;
 
-    if (guess.replace(/\s+/g, "") === correctEquation.replace(/\s+/g, "")) {
+    if (validateLinearExpression(guess, a, b)) {
       setMessage(`Correct! The function was f(x) = ${a}x + ${b}`);
       setIsSolved(true);
     } else {
@@ -139,13 +140,17 @@ const Game = ({ onPuzzleNumberChange }: GameProps) => {
                 <div className="space-y-6">
                   <div>
                     <label htmlFor="guess" className="block font-mono text-sm text-zinc-400 mb-3">
-                      Your Hypothesis
+                      Your Prediction
                     </label>
                     <input
                       id="guess"
                       type="text"
                       value={guess}
-                      onChange={(e) => setGuess(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setGuess(value);
+                        setExpressionHint(getExpressionHint(value));
+                      }}
                       onKeyPress={(e) => {
                         if (e.key === 'Enter') {
                           e.currentTarget.blur();
@@ -154,13 +159,23 @@ const Game = ({ onPuzzleNumberChange }: GameProps) => {
                       }}
                       className="bg-zinc-800 border border-zinc-600 text-zinc-100 rounded-lg px-4 py-3 text-base font-medium w-full min-h-[48px] focus:border-green-500 focus:ring-2 focus:ring-green-500/20 focus:outline-none placeholder-zinc-500"
                       disabled={isSolved || guessMade}
-                      placeholder="x * a + b"
+                      placeholder="e.g., 6x + 5, x*6+5, (x+1)*6"
                     />
+                    {expressionHint && !isSolved && !guessMade && (
+                      <p className="text-yellow-400 text-sm mt-2 font-mono">
+                        {expressionHint}
+                      </p>
+                    )}
+                    {history.length === 0 && !isSolved && !guessMade && (
+                      <p className="text-zinc-400 text-sm mt-2 font-mono">
+                        Run at least one test before submitting your prediction.
+                      </p>
+                    )}
                   </div>
                   
                   <button
                     onClick={handleGuess}
-                    disabled={isSolved || guessMade}
+                    disabled={isSolved || guessMade || history.length === 0}
                     className="bg-gray-500 hover:bg-gray-600 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:cursor-not-allowed text-white border-none rounded-lg px-8 py-4 font-semibold flex items-center justify-center gap-2 min-h-[50px] transition-all duration-150 hover:-translate-y-0.5 active:translate-y-0 w-full"
                   >
                     Submit
